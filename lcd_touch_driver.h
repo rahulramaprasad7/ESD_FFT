@@ -36,6 +36,8 @@
 /* Threshold for detecting if there is a touch. */
 #define TOUCH_THRESHOLD 16000
 
+volatile extern uint32_t touchX;
+volatile extern uint32_t touchY;
 
 uint16_t getTouchX(void);
 uint16_t getTouchY(void);

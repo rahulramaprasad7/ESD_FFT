@@ -10,6 +10,8 @@
 //Read X: read Y1, X2 GND, X1 VCC, Y2 Tristate
 //Read Y: read X1, Y2 GND, Y1 VCC, X2 Tristate
 
+volatile uint32_t touchX = 0;
+volatile uint32_t touchY = 0;
 
 //void adc_init()
 //{
@@ -112,12 +114,14 @@ void ADC14_IRQHandler(void) {
     ++i;
     if(yready){
         yready = false;
-        printf("X:\t %d\t%d\n",ADC14->MEM[1],i);
+        touchY = ADC14->MEM[1];
+        printf("X:\t %d\t%d\n",touchY,i);
     }
 
     if(xready){
         xready = false;
-        printf("Y: %d\t\t%d\n",ADC14->MEM[0],i);
+        touchX = ADC14->MEM[0];
+        printf("Y: %d\t\t%d\n",touchX,i);
     }
     NVIC->ICER[0] = 1 << ((ADC14_IRQn) & 31);
 //    ADC14->CTL0 &= ~ADC14_CTL0_ON;

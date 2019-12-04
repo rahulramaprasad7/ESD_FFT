@@ -56,12 +56,6 @@ int main(void)
     P2->OUT |= BIT7;
 
 
-    //    EUSCI_B_SPI_MSB_FIRST,                             // MSB First
-    //            EUSCI_B_SPI_PHASE_DATA_CAPTURED_ONFIRST_CHANGED_ON_NEXT,         // Phase
-    //            EUSCI_B_SPI_CLOCKPOLARITY_INACTIVITY_LOW,         // Low polarity
-    //            EUSCI_B_SPI_3PIN                                   // 3Wire SPI Mode
-
-
     EUSCI_B0->CTLW0 |= EUSCI_B_CTLW0_SWRST; // Put eUSCI state machine in reset
     EUSCI_B0->CTLW0 = EUSCI_B_CTLW0_SWRST | // Remain eUSCI state machine in reset
             EUSCI_B_CTLW0_MST |             // Set as SPI master
@@ -115,14 +109,17 @@ int main(void)
 
     while(1){
         ADC14->CTL0 |= ADC14_CTL0_ENC |
-                        ADC14_CTL0_SC;
+                ADC14_CTL0_SC;
+
         uint16_t inX = getTouchX();
         delay(10);
         uint16_t inY = getTouchY();
 
-
-        if(inY != 0 && inX != 0)
-            printf("X: %d Y: %d\n", inX, inY);
+//        if(touchX < 14000 && touchY < 14000)
+            if(touchX >= 8000 && touchX <= 10000 && touchY >= 8000 && touchY <= 10000)
+                writeString(0, 50, RED, "TOUCH DETECTED    ");
+            else
+                writeString(0, 50, RED, "TOUCH NOT DETECTED");
     }
 }
 

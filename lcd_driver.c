@@ -133,8 +133,11 @@ void writeLetter(uint16_t posX, uint16_t posY, uint16_t color, char inChar)
 {
     selectCS(0);
 
-    if(inChar < '!' || inChar > '~')
+    if(inChar < ' ' || inChar > '~')
         return;
+
+    if(inChar == ' ')
+            inChar = '~' + 1;
 
     inChar -= '!';
 //    printf("Entered Character: %d\n", inChar);
