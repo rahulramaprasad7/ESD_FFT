@@ -28,6 +28,9 @@ main.obj: ../Lucida_Console_8pts.h
 main.obj: ../bitmap_db.h
 main.obj: ../lcd_driver.h
 main.obj: ../lcd_touch_driver.h
+main.obj: /Applications/ti/ccs910/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/math.h
+main.obj: /Applications/ti/ccs910/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/_defs.h
+main.obj: /Applications/ti/ccs910/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/machine/_limits.h
 
 ../main.c: 
 /Applications/ti/ccs910/ccs/ccs_base/arm/include/msp.h: 
@@ -57,3 +60,6 @@ main.obj: ../lcd_touch_driver.h
 ../bitmap_db.h: 
 ../lcd_driver.h: 
 ../lcd_touch_driver.h: 
+/Applications/ti/ccs910/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/math.h: 
+/Applications/ti/ccs910/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/_defs.h: 
+/Applications/ti/ccs910/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/machine/_limits.h: 

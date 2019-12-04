@@ -78,8 +78,18 @@ void setCursorXY(uint16_t posX, uint16_t posY)
     spi16bytes(posY);
 }
 
+void drawPixelXY(uint16_t posX, uint16_t posY, uint16_t color)
+{
+    selectCS(0);
+    setCursorXY(posX, posY);
+    lcdSendCommand(SSD2119_RAM_DATA_REG);
+    spi16bytes(color);
+    selectCS(1);
+}
+
 void drawLineX(uint16_t startPosX, uint16_t length, uint16_t startPosY, uint16_t color)
 {
+    selectCS(0);
 
     lcdSendCommand(SSD2119_X_RAM_ADDR_REG);
     spi16bytes(startPosX);
@@ -92,10 +102,14 @@ void drawLineX(uint16_t startPosX, uint16_t length, uint16_t startPosY, uint16_t
     lcdSendCommand(SSD2119_RAM_DATA_REG);
     for(i = 0; i < length; i++)
         spi16bytes(color);
+
+    selectCS(1);
 }
 
 void drawLineY(uint16_t startPosY, uint16_t length, uint16_t startPosX, uint16_t color)
 {
+    selectCS(0);
+
     lcdSendCommand(SSD2119_X_RAM_ADDR_REG);
     spi16bytes(startPosX);
     lcdSendCommand(SSD2119_Y_RAM_ADDR_REG);
@@ -107,6 +121,8 @@ void drawLineY(uint16_t startPosY, uint16_t length, uint16_t startPosX, uint16_t
     lcdSendCommand(SSD2119_RAM_DATA_REG);
     for(i = 0; i < length; i++)
         spi16bytes(color);
+
+    selectCS(0);
 }
 
 void writeString(uint16_t posX, uint16_t posY, uint16_t color, char *inString)
@@ -335,15 +351,15 @@ void lcdInit(void)
     }
 
 
-    drawLineX(0, 5, 0, BLUE);
-    drawLineX(10, 10, 10, RED);
-    drawLineX(20, 15, 20, GREEN);
-    drawLineX(30, 20, 30, BLUE);
-
-    drawLineY(50, 5, 0, BLUE);
-    drawLineY(60, 10, 10, RED);
-    drawLineY(70, 15, 20, GREEN);
-    drawLineY(80, 20, 30, BLUE);
+//    drawLineX(0, 5, 0, BLUE);
+//    drawLineX(10, 10, 10, RED);
+//    drawLineX(20, 15, 20, GREEN);
+//    drawLineX(30, 20, 30, BLUE);
+//
+//    drawLineY(50, 5, 0, BLUE);
+//    drawLineY(60, 10, 10, RED);
+//    drawLineY(70, 15, 20, GREEN);
+//    drawLineY(80, 20, 30, BLUE);
 
 
 

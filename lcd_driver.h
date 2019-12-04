@@ -40,6 +40,7 @@ void selectCS(int state);
 void selectDC(int state);
 void delay(uint16_t msec);
 void setCursorMode(uint8_t id1, uint8_t id0, uint8_t am);
+void drawPixelXY(uint16_t posX, uint16_t posY, uint16_t color);
 void drawLineX(uint16_t startPosX, uint16_t length, uint16_t startPosY, uint16_t color);
 void drawLineY(uint16_t startPosY, uint16_t length, uint16_t startPosX, uint16_t color);
 void writeLetter(uint16_t posX, uint16_t posY, uint16_t color, char inChar);

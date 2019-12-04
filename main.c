@@ -29,13 +29,25 @@
 #include "Lucida_Console_8pts.h"
 #include "lcd_driver.h"
 #include "lcd_touch_driver.h"
+#include <math.h>
 
 uint32_t map(uint32_t x, uint32_t in_min, uint32_t in_max, uint32_t out_min, uint32_t out_max);
+
+#define arraySize 900
+
+uint16_t testArray[arraySize] = {0};
 
 int main(void)
 {
     WDT_A->CTL = WDT_A_CTL_PW |             // Stop watchdog timer
             WDT_A_CTL_HOLD;
+
+    uint16_t i = 0;
+    for(i = 0; i < arraySize - 1; i++)
+        testArray[i] = 5;
+
+    for(i = 0; i < arraySize - 1; i++)
+        testArray[i] = (uint16_t)((double)100 + (sin(M_PI * ((double)i/100)) * (double)100));
 
 
     //Set as outputs, inputs and SPI function of the GPIO
@@ -88,9 +100,9 @@ int main(void)
     lcdInit();
 
     //    writeLetter(50, 50, GREEN, 'O');
-    writeString(0, 0, WHITE, "The quick brown fox jumped over the lazy dog.");
-    writeString(0, 12, WHITE, "!@#$%^&*()_+}{~,./';\\|/");
-    writeString(0, 24, WHITE, "Voltage (V) ->");
+    //    writeString(0, 0, WHITE, "The quick brown fox jumped over the lazy dog.");
+    //    writeString(0, 12, WHITE, "!@#$%^&*()_+}{~,./';\\|/");
+    //    writeString(0, 24, WHITE, "Voltage (V) ->");
 
 
     ADC14->CTL0 = ADC14_CTL0_ON |
@@ -107,6 +119,22 @@ int main(void)
 
     SCB->SCR &= ~SCB_SCR_SLEEPONEXIT_Msk;   // Wake up on exit from ISR
 
+    //(320x240 resolution)
+//    selectCS(0);
+    drawLineX(20, 300, 220, GREEN);
+    drawLineY(0, 220, 20, GREEN);
+//    selectCS(1);
+
+    //    uint16_t displayValues[300];
+    int noPts = (int)arraySize/300;
+    for(i = 0; i < 300; i++){
+        uint16_t temp = testArray[i * noPts];
+//        drawPixelXY(20 + i, 239 - (20 + temp), WHITE);
+//        selectCS(0);
+        drawLineY(239 - (20 + temp), temp, 20 + i, WHITE);
+//        selectCS(1);
+    }
+
     while(1){
         ADC14->CTL0 |= ADC14_CTL0_ENC |
                 ADC14_CTL0_SC;
@@ -115,11 +143,11 @@ int main(void)
         delay(10);
         uint16_t inY = getTouchY();
 
-//        if(touchX < 14000 && touchY < 14000)
-            if(touchX >= 8000 && touchX <= 10000 && touchY >= 8000 && touchY <= 10000)
-                writeString(0, 50, RED, "TOUCH DETECTED    ");
-            else
-                writeString(0, 50, RED, "TOUCH NOT DETECTED");
+        //        if(touchX < 14000 && touchY < 14000)
+        //            if(touchX >= 8000 && touchX <= 10000 && touchY >= 8000 && touchY <= 10000)
+        //                writeString(0, 50, RED, "TOUCH DETECTED    ");
+        //            else
+        //                writeString(0, 50, RED, "TOUCH NOT DETECTED");
     }
 }
 
