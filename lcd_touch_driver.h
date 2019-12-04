@@ -12,6 +12,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdint.h>
+#include "lcd_driver.h"
 
 /* X+ definitions. ---> PIn 24 on LaunchPad ---> P4.0, A13 on MSp432*/
 

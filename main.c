@@ -30,7 +30,7 @@
 #include "lcd_driver.h"
 #include "lcd_touch_driver.h"
 
-
+uint32_t map(uint32_t x, uint32_t in_min, uint32_t in_max, uint32_t out_min, uint32_t out_max);
 
 int main(void)
 {
@@ -84,9 +84,6 @@ int main(void)
 
     delay(1);
 
-
-    //    delay(10);
-
     // Enable global interrupt
     __enable_irq();
 
@@ -96,18 +93,41 @@ int main(void)
     //Infinite loop
     lcdInit();
 
-//    writeLetter(50, 50, GREEN, 'O');
+    //    writeLetter(50, 50, GREEN, 'O');
     writeString(0, 0, WHITE, "The quick brown fox jumped over the lazy dog.");
     writeString(0, 12, WHITE, "!@#$%^&*()_+}{~,./';\\|/");
     writeString(0, 24, WHITE, "Voltage (V) ->");
 
 
-    ADC14->IER0 |= ADC14_IER0_IE14;          // Enable ADC conv complete interrupt
+    ADC14->CTL0 = ADC14_CTL0_ON |
+            ADC14_CTL0_MSC |
+            ADC14_CTL0_SHT0__192 |
+            ADC14_CTL0_SHP |
+            ADC14_CTL0_CONSEQ_3;
+
+    ADC14->MCTL[0] = ADC14_MCTLN_INCH_13;    // ref+=AVcc, channel = A0
+    ADC14->MCTL[1] = ADC14_MCTLN_INCH_14 | ADC14_MCTLN_EOS;    // ref+=AVcc, channel = A1
+
+
+    ADC14->IER0 = ADC14_IER0_IE1;           // Enable ADC14IFG.3
+
+    SCB->SCR &= ~SCB_SCR_SLEEPONEXIT_Msk;   // Wake up on exit from ISR
 
     while(1){
-        getTouchX();
-//        printf("ADC: %d\n", getTouchX());
+        ADC14->CTL0 |= ADC14_CTL0_ENC |
+                        ADC14_CTL0_SC;
+        uint16_t inX = getTouchX();
+        delay(10);
+        uint16_t inY = getTouchY();
+
+
+        if(inY != 0 && inX != 0)
+            printf("X: %d Y: %d\n", inX, inY);
     }
 }
 
+uint32_t map(uint32_t x, uint32_t in_min, uint32_t in_max, uint32_t out_min, uint32_t out_max)
+{
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
 

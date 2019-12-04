@@ -23,6 +23,11 @@ lcd_touch_driver.obj: /Applications/ti/ccs910/ccs/tools/compiler/ti-cgt-arm_18.1
 lcd_touch_driver.obj: /Applications/ti/ccs910/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/_ti_config.h
 lcd_touch_driver.obj: /Applications/ti/ccs910/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/linkage.h
 lcd_touch_driver.obj: /Applications/ti/ccs910/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/stdarg.h
+lcd_touch_driver.obj: ../lcd_driver.h
+lcd_touch_driver.obj: ../HAL_MSP_EXP432P401R_KITRONIX320X240_SSD2119_SPI.h
+lcd_touch_driver.obj: ../kitronix320x240x16_ssd2119_spi.h
+lcd_touch_driver.obj: ../Lucida_Console_8pts.h
+lcd_touch_driver.obj: ../bitmap_db.h
 
 ../lcd_touch_driver.c: 
 ../lcd_touch_driver.h: 
@@ -47,3 +52,8 @@ lcd_touch_driver.obj: /Applications/ti/ccs910/ccs/tools/compiler/ti-cgt-arm_18.1
 /Applications/ti/ccs910/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/_ti_config.h: 
 /Applications/ti/ccs910/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/linkage.h: 
 /Applications/ti/ccs910/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/include/stdarg.h: 
+../lcd_driver.h: 
+../HAL_MSP_EXP432P401R_KITRONIX320X240_SSD2119_SPI.h: 
+../kitronix320x240x16_ssd2119_spi.h: 
+../Lucida_Console_8pts.h: 
+../bitmap_db.h: 
