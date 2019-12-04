@@ -10,6 +10,8 @@ GEN_CMDS__FLAG :=
 ORDERED_OBJS += \
 "./Lucida_Console_8pts.obj" \
 "./Lucida_Console_8pts_narrow.obj" \
+"./lcd_driver.obj" \
+"./lcd_touch_driver.obj" \
 "./main.obj" \
 "./startup_msp432p401r_ccs.obj" \
 "./system_msp432p401r.obj" \
@@ -156,8 +158,8 @@ esd_project.hex: $(EXE_OUTPUTS)
 # Other Targets
 clean:
 	-$(RM) $(BIN_OUTPUTS__QUOTED)$(EXE_OUTPUTS__QUOTED)
-	-$(RM) "Lucida_Console_8pts.obj" "Lucida_Console_8pts_narrow.obj" "main.obj" "startup_msp432p401r_ccs.obj" "system_msp432p401r.obj" 
-	-$(RM) "Lucida_Console_8pts.d" "Lucida_Console_8pts_narrow.d" "main.d" "startup_msp432p401r_ccs.d" "system_msp432p401r.d" 
+	-$(RM) "Lucida_Console_8pts.obj" "Lucida_Console_8pts_narrow.obj" "lcd_driver.obj" "lcd_touch_driver.obj" "main.obj" "startup_msp432p401r_ccs.obj" "system_msp432p401r.obj" 
+	-$(RM) "Lucida_Console_8pts.d" "Lucida_Console_8pts_narrow.d" "lcd_driver.d" "lcd_touch_driver.d" "main.d" "startup_msp432p401r_ccs.d" "system_msp432p401r.d" 
 	-@echo 'Finished clean'
 	-@echo ' '
 

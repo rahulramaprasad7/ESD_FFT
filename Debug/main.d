@@ -26,6 +26,8 @@ main.obj: ../HAL_MSP_EXP432P401R_KITRONIX320X240_SSD2119_SPI.h
 main.obj: ../kitronix320x240x16_ssd2119_spi.h
 main.obj: ../Lucida_Console_8pts.h
 main.obj: ../bitmap_db.h
+main.obj: ../lcd_driver.h
+main.obj: ../lcd_touch_driver.h
 
 ../main.c: 
 /Applications/ti/ccs910/ccs/ccs_base/arm/include/msp.h: 
@@ -53,3 +55,5 @@ main.obj: ../bitmap_db.h
 ../kitronix320x240x16_ssd2119_spi.h: 
 ../Lucida_Console_8pts.h: 
 ../bitmap_db.h: 
+../lcd_driver.h: 
+../lcd_touch_driver.h: 
