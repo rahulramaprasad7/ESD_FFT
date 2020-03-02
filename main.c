@@ -1,58 +1,174 @@
-//*****************************************************************************
-//
-// HAL_MSP_EXP430F5529LP_KITRONIX320X240_SSD2119_SPI.h - Prototypes for the
-//           KITRONIX320X240_SSD2119 LCD display driver.
-//
-//
-//                 MSP430F5529                 BOOSTXL-K350QVG-S1
-//                -----------------              ------------
-//               |     P1.6/UCB0SIMO|---------> |LCD_SDI     |
-//            /|\|                  |           |            |
-//             | |      P1.5/UCB0CLK|---------> |LCD_SCL     |
-//             --|RST               |           |            |
-//               |              P5.0|---------> |LCD_SCS     |
-//               |              P4.6|---------> |LCD_SDC     |
-//               |              P3.5|---------> |LCD_RESET   |
-//               |        P2.7/TA2.2|---------> |LCD_PWM     |
-//               |                  |           |            |
-//               |                  |            ------------
-//                ------------------
-//****************************************************************************
-
-
-#include "msp.h"
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdint.h>
+/*
+ * @file main.c
+ * @brief Real-Time FFT implementation on DSP
+ *
+ * This source file contains the real-time implementation
+ * of FFT using the CMSIS DSP libraray rfft() fucntion
+ * along with DMA for transfering data from the ADC to 
+ * the DSP.
+ *
+ * @date 14-Dec-2019
+ * @author Prayag Milan Desai, Rahul Ramaprasad
+ */
+#include <ti/devices/msp432p4xx/inc/msp.h>
+#include <ti/devices/msp432p4xx/driverlib/driverlib.h>
+#include <ti/grlib/grlib.h>
 #include "HAL_MSP_EXP432P401R_KITRONIX320X240_SSD2119_SPI.h"
 #include "kitronix320x240x16_ssd2119_spi.h"
 #include "Lucida_Console_8pts.h"
 #include "lcd_driver.h"
 #include "lcd_touch_driver.h"
-#include <math.h>
+#include <stdio.h>
+#include <arm_math.h>
+#include <arm_const_structs.h>
 
-uint32_t map(uint32_t x, uint32_t in_min, uint32_t in_max, uint32_t out_min, uint32_t out_max);
+//Number of points for FFT
+#define TEST_LENGTH_SAMPLES 512
+#define SAMPLE_LENGTH 512
 
-#define arraySize 900
+/* ------------------------------------------------------------------
+ * Global variables for FFT Bin Example
+ * ------------------------------------------------------------------- */
+uint32_t fftSize = SAMPLE_LENGTH;
+uint32_t ifftFlag = 0;
+uint32_t doBitReverse = 1;
+volatile arm_status status;
 
-uint16_t testArray[8192] = {0};
+#define NFFT 512
+
+
+#define SMCLK_FREQUENCY     48000000
+#define SAMPLE_FREQUENCY    8000
+
+/* DMA Control Table */
+#if defined(__TI_COMPILER_VERSION__)
+#pragma DATA_ALIGN(MSP_EXP432P401RLP_DMAControlTable, 1024)
+#elif defined(__IAR_SYSTEMS_ICC__)
+#pragma data_alignment=1024
+#elif defined(__GNUC__)
+__attribute__ ((aligned (1024)))
+#elif defined(__CC_ARM)
+__align(1024)
+#endif
+static DMA_ControlTable MSP_EXP432P401RLP_DMAControlTable[32];
+
+/* FFT data/processing buffers*/
+float hann[SAMPLE_LENGTH];
+int16_t data_array1[SAMPLE_LENGTH];
+int16_t data_array2[SAMPLE_LENGTH];
+int16_t data_input[SAMPLE_LENGTH * 2];
+int16_t data_output[SAMPLE_LENGTH];
+
+volatile int switch_data = 0;
+
+uint32_t color = 0;
+
+/* Timer_A PWM Configuration Parameter */
+Timer_A_PWMConfig pwmConfig =
+{
+ TIMER_A_CLOCKSOURCE_SMCLK,
+ TIMER_A_CLOCKSOURCE_DIVIDER_1,
+ (SMCLK_FREQUENCY / SAMPLE_FREQUENCY),
+ TIMER_A_CAPTURECOMPARE_REGISTER_1,
+ TIMER_A_OUTPUTMODE_SET_RESET,
+ (SMCLK_FREQUENCY / SAMPLE_FREQUENCY) / 2
+};
 
 int main(void)
 {
-    WDT_A->CTL = WDT_A_CTL_PW |             // Stop watchdog timer
-            WDT_A_CTL_HOLD;
+    /* Halting WDT and disabling master interrupts */
+    MAP_WDT_A_holdTimer();
+    MAP_Interrupt_disableMaster();
 
-    uint16_t i = 0;
-    for(i = 0; i < arraySize - 1; i++)
-        testArray[i] = 5;
+    /* Set the core voltage level to VCORE1 */
+    MAP_PCM_setCoreVoltageLevel(PCM_VCORE1);
 
-    for(i = 0; i < arraySize - 1; i++)
-        testArray[i] = (uint16_t)((double)100 + (sin(M_PI * ((double)i/100)) * (double)100));
+    /* Set 2 flash wait states for Flash bank 0 and 1*/
+    MAP_FlashCtl_setWaitState(FLASH_BANK0, 2);
+    MAP_FlashCtl_setWaitState(FLASH_BANK1, 2);
+
+    /* Initializes Clock System */
+    MAP_CS_setDCOCenteredFrequency(CS_DCO_FREQUENCY_48);
+    MAP_CS_initClockSignal(CS_MCLK, CS_DCOCLK_SELECT, CS_CLOCK_DIVIDER_1);
+    MAP_CS_initClockSignal(CS_HSMCLK, CS_DCOCLK_SELECT, CS_CLOCK_DIVIDER_1);
+    MAP_CS_initClockSignal(CS_SMCLK, CS_DCOCLK_SELECT, CS_CLOCK_DIVIDER_1);
+    MAP_CS_initClockSignal(CS_ACLK, CS_REFOCLK_SELECT, CS_CLOCK_DIVIDER_1);
 
 
-    //Set as outputs, inputs and SPI function of the GPIO
+    // Initialize Hann Window
+    int n;
+    for(n = 0; n < SAMPLE_LENGTH; n++)
+    {
+        hann[n] = 0.5f - 0.5f * cosf((2 * PI * n) / (SAMPLE_LENGTH - 1));
+    }
+
+    /* Configuring Timer_A to have a period of approximately 500ms and
+     * an initial duty cycle of 10% of that (3200 ticks)  */
+    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig);
+
+    /* Initializing ADC (MCLK/1/1) */
+    ADC14_enableModule();
+    ADC14_initModule(ADC_CLOCKSOURCE_MCLK, ADC_PREDIVIDER_1, ADC_DIVIDER_1, 0);
+
+    ADC14_setSampleHoldTrigger(ADC_TRIGGER_SOURCE1, false);
+
+    /* Configuring GPIOs (4.3 A10) */
+    GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P5, GPIO_PIN4,
+                                               GPIO_TERTIARY_MODULE_FUNCTION);
+
+    /* Configuring ADC Memory */
+    ADC14_configureSingleSampleMode(ADC_MEM0, true);
+    ADC14_configureConversionMemory(ADC_MEM0, ADC_VREFPOS_AVCC_VREFNEG_VSS,
+                                    ADC_INPUT_A1, false);
+
+    /* Set ADC result format to signed binary */
+    ADC14_setResultFormat(ADC_SIGNED_BINARY);
+
+    /* Configuring DMA module */
+    DMA_enableModule();
+    DMA_setControlBase(MSP_EXP432P401RLP_DMAControlTable);
+
+    DMA_disableChannelAttribute(DMA_CH7_ADC14,
+                                UDMA_ATTR_ALTSELECT | UDMA_ATTR_USEBURST |
+                                UDMA_ATTR_HIGH_PRIORITY |
+                                UDMA_ATTR_REQMASK);
+
+
+
+
+    /* Setting Control Indexes. In this case we will set the source of the
+     * DMA transfer to ADC14 Memory 0
+     *  and the destination to the
+     * destination data array. */
+    MAP_DMA_setChannelControl(
+            UDMA_PRI_SELECT | DMA_CH7_ADC14,
+            UDMA_SIZE_16 | UDMA_SRC_INC_NONE |
+            UDMA_DST_INC_16 | UDMA_ARB_1);
+    MAP_DMA_setChannelTransfer(UDMA_PRI_SELECT | DMA_CH7_ADC14,
+                               UDMA_MODE_PINGPONG, (void*) &ADC14->MEM[0],
+                               data_array1, SAMPLE_LENGTH);
+
+    MAP_DMA_setChannelControl(
+            UDMA_ALT_SELECT | DMA_CH7_ADC14,
+            UDMA_SIZE_16 | UDMA_SRC_INC_NONE |
+            UDMA_DST_INC_16 | UDMA_ARB_1);
+    MAP_DMA_setChannelTransfer(UDMA_ALT_SELECT | DMA_CH7_ADC14,
+                               UDMA_MODE_PINGPONG, (void*) &ADC14->MEM[0],
+                               data_array2, SAMPLE_LENGTH);
+
+    /* Assigning/Enabling Interrupts */
+    MAP_DMA_assignInterrupt(DMA_INT1, 7);
+    MAP_Interrupt_enableInterrupt(INT_DMA_INT1);
+    MAP_DMA_assignChannel(DMA_CH7_ADC14);
+    MAP_DMA_clearInterruptFlag(7);
+    MAP_Interrupt_enableMaster();
+
+    /* Now that the DMA is primed and setup, enabling the channels. The ADC14
+     * hardware should take over and transfer/receive all bytes */
+    MAP_DMA_enableChannel(7);
+    MAP_ADC14_enableConversion();
+
     P1->DIR |= BIT5 | BIT6;
-    //    P1->DIR &= ~BIT5;
     P1->SEL0 |= BIT5 | BIT6;
 
     P5->DIR |= BIT0;
@@ -90,69 +206,141 @@ int main(void)
 
     delay(1);
 
-    // Enable global interrupt
-    __enable_irq();
-
-    // Enable eUSCI_B0 interrupt in NVIC module
-    //    NVIC->ISER[0] = 1 << ((EUSCIB0_IRQn) & 31);
-
-    //Infinite loop
     lcdInit();
 
-    //    writeLetter(50, 50, GREEN, 'O');
-    //    writeString(0, 0, WHITE, "The quick brown fox jumped over the lazy dog.");
-    //    writeString(0, 12, WHITE, "!@#$%^&*()_+}{~,./';\\|/");
-    //    writeString(0, 24, WHITE, "Voltage (V) ->");
-
-
-    ADC14->CTL0 = ADC14_CTL0_ON |
-            ADC14_CTL0_MSC |
-            ADC14_CTL0_SHT0__192 |
-            ADC14_CTL0_SHP |
-            ADC14_CTL0_CONSEQ_3;
-
-    ADC14->MCTL[0] = ADC14_MCTLN_INCH_13;    // ref+=AVcc, channel = A0
-    ADC14->MCTL[1] = ADC14_MCTLN_INCH_14 | ADC14_MCTLN_EOS;    // ref+=AVcc, channel = A1
-
-
-    ADC14->IER0 = ADC14_IER0_IE1;           // Enable ADC14IFG.3
 
     SCB->SCR &= ~SCB_SCR_SLEEPONEXIT_Msk;   // Wake up on exit from ISR
 
     //(320x240 resolution)
-//    selectCS(0);
+    //    selectCS(0);
     drawLineX(20, 300, 220, GREEN);
     drawLineY(0, 220, 20, GREEN);
-//    selectCS(1);
 
-    //    uint16_t displayValues[300];
-    int noPts = (int)arraySize/300;
-    for(i = 0; i < 300; i++){
-        uint16_t temp = testArray[i * noPts];
-//        drawPixelXY(20 + i, 239 - (20 + temp), WHITE);
-//        selectCS(0);
-        drawLineY(239 - (20 + temp), temp, 20 + i, WHITE);
-//        selectCS(1);
-    }
+    //LCD UI
+    //X-axis labels
+    writeString(20,480 , WHITE, "0");
+    writeString(84, 480, WHITE, "Fs/4");
+    writeString(148, 480, WHITE, "Fs/2");
+    writeString(212, 480, WHITE, "3Fs/4");
+    writeString(276, 480, WHITE, "Fs");
 
-    while(1){
-        ADC14->CTL0 |= ADC14_CTL0_ENC |
-                ADC14_CTL0_SC;
+    //Y-axis labels
+    writeString(0, 460, WHITE, "20");
+    writeString(0, 440, WHITE, "40");
+    writeString(0, 420, WHITE, "60");
+    writeString(0, 400, WHITE, "80");
+    writeString(0, 380, WHITE, "100");
+    writeString(0, 360, WHITE, "120");
+    writeString(0, 340, WHITE, "140");
+    writeString(0, 320, WHITE, "160");
+    writeString(0, 300, WHITE, "180");
+    writeString(0, 280, WHITE, "200");
+    writeString(0, 260, WHITE, "220");
+    while(1)
+    {
+        int i = 0;
+        MAP_PCM_gotoLPM0();
 
-        uint16_t inX = getTouchX();
-        delay(10);
-        uint16_t inY = getTouchY();
 
-        //        if(touchX < 14000 && touchY < 14000)
-        //            if(touchX >= 8000 && touchX <= 10000 && touchY >= 8000 && touchY <= 10000)
-        //                writeString(0, 50, RED, "TOUCH DETECTED    ");
-        //            else
-        //                writeString(0, 50, RED, "TOUCH NOT DETECTED");
+        /* Computer real FFT using the completed data buffer */
+        if(switch_data & 1)
+        {
+            for(i = 0; i < 512; i++)
+            {
+                data_array1[i] = (int16_t)(hann[i] * data_array1[i]);
+            }
+            arm_rfft_instance_q15 instance;
+            status = arm_rfft_init_q15(&instance, fftSize, ifftFlag,
+                                       doBitReverse);
+
+            arm_rfft_q15(&instance, data_array1, data_input);
+        }
+        else
+        {
+            for(i = 0; i < 512; i++)
+            {
+                data_array2[i] = (int16_t)(hann[i] * data_array2[i]);
+            }
+            arm_rfft_instance_q15 instance;
+            status = arm_rfft_init_q15(&instance, fftSize, ifftFlag,
+                                       doBitReverse);
+
+            arm_rfft_q15(&instance, data_array2, data_input);
+        }
+
+        /* Calculate magnitude of FFT complex output */
+        for(i = 0; i < 1024; i += 2)
+        {
+            data_output[i / 2]  = (int32_t)(sqrtf((data_input[i] * data_input[i]) + (data_input[i + 1] * data_input[i + 1])));
+            if ( data_output[i / 2] > 200)
+                data_output[i / 2] /= 100;
+        }
+
+        q15_t maxValue;
+        uint32_t maxIndex = 0;
+
+        arm_max_q15(data_output, fftSize, &maxValue, &maxIndex);
+
+        //Color mapping based on highest frequency element
+        if(maxIndex <= 64)
+        {
+            color = ((uint32_t)(0xFF * (maxIndex / 64.0f)) << 8) + 0xFF;
+        }
+        else if(maxIndex <= 128)
+        {
+            color =
+                    (0xFF - (uint32_t)(0xFF * ((maxIndex - 64) / 64.0f))) + 0xFF00;
+        }
+        else if(maxIndex <= 192)
+        {
+            color =
+                    ((uint32_t)(0xFF * ((maxIndex - 128) / 64.0f)) << 16) + 0xFF00;
+        }
+        else
+        {
+            color =
+                    ((0xFF -
+                            (uint32_t)(0xFF *
+                                    ((maxIndex - 192) / 64.0f))) << 8) + 0xFF0000;
+        }
+        //Clearing previous output on LCD before printing new output
+        for(i = 0; i < 320; i++)
+        {
+            drawLineY(239, 218, i + 21, BLACK);
+        }
+        //Printing FFT output on the LCD
+        for(i = 0; i < 256; i += 2)
+        {
+            int x = min(200, (int)((data_output[i] + data_output[i + 1])));
+            drawLineY(239 - ( 20 + x), x, i + 20 , color);
+        }
     }
 }
 
-uint32_t map(uint32_t x, uint32_t in_min, uint32_t in_max, uint32_t out_min, uint32_t out_max)
+/* Completion interrupt for ADC14 MEM0 */
+void DMA_INT1_IRQHandler(void)
 {
-    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+    /* Switch between primary and alternate bufferes with DMA's PingPong mode */
+    if(DMA_getChannelAttribute(7) & UDMA_ATTR_ALTSELECT)
+    {
+        DMA_setChannelControl(
+                UDMA_PRI_SELECT | DMA_CH7_ADC14,
+                UDMA_SIZE_16 | UDMA_SRC_INC_NONE |
+                UDMA_DST_INC_16 | UDMA_ARB_1);
+        DMA_setChannelTransfer(UDMA_PRI_SELECT | DMA_CH7_ADC14,
+                               UDMA_MODE_PINGPONG, (void*) &ADC14->MEM[0],
+                               data_array1, SAMPLE_LENGTH);
+        switch_data = 1;
+    }
+    else
+    {
+        DMA_setChannelControl(
+                UDMA_ALT_SELECT | DMA_CH7_ADC14,
+                UDMA_SIZE_16 | UDMA_SRC_INC_NONE |
+                UDMA_DST_INC_16 | UDMA_ARB_1);
+        DMA_setChannelTransfer(UDMA_ALT_SELECT | DMA_CH7_ADC14,
+                               UDMA_MODE_PINGPONG, (void*) &ADC14->MEM[0],
+                               data_array2, SAMPLE_LENGTH);
+        switch_data = 0;
+    }
 }
-
