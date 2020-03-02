@@ -1,3 +1,12 @@
+/*
+ * REFERENCE: This header file is taken from the
+ * example code provided by Texas Instruments for the Kintronix
+ * 320x240 LCD example code
+ *
+ * http://software-dl.ti.com/msp430/msp430_public_sw/mcu/msp430/MSP-EXP432P401R/latest/index_FDS.html
+ */
+
+
 /* --COPYRIGHT--,BSD
  * Copyright (c) 2016, Texas Instruments Incorporated
  * All rights reserved.
