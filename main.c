@@ -35,7 +35,7 @@ uint32_t map(uint32_t x, uint32_t in_min, uint32_t in_max, uint32_t out_min, uin
 
 #define arraySize 900
 
-uint16_t testArray[arraySize] = {0};
+uint16_t testArray[8192] = {0};
 
 int main(void)
 {

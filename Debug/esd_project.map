@@ -1,7 +1,7 @@
 ******************************************************************************
                   TI ARM Linker Unix v18.12.4                  
 ******************************************************************************
->> Linked Wed Dec  4 07:24:23 2019
+>> Linked Sat Dec 14 00:32:50 2019
 
 OUTPUT FILE NAME:   <esd_project.out>
 ENTRY POINT SYMBOL: "_c_int00_noargs"  address: 0000473d
@@ -13,8 +13,8 @@ MEMORY CONFIGURATION
 ----------------------  --------  ---------  --------  --------  ----  --------
   MAIN                  00000000   00040000  000050d1  0003af2f  R  X
   INFO                  00200000   00004000  00000000  00004000  R  X
-  SRAM_CODE             01000000   00010000  000010cc  0000ef34  RW X
-  SRAM_DATA             20000000   00010000  000010cc  0000ef34  RW  
+  SRAM_CODE             01000000   00010000  000049c4  0000b63c  RW X
+  SRAM_DATA             20000000   00010000  000049c4  0000b63c  RW  
 
 
 SEGMENT ALLOCATION MAP
@@ -26,10 +26,10 @@ run origin  load origin   length   init length attrs members
   000000e4    000000e4    000048e4   000048e4    r-x .text
   000049c8    000049c8    00000671   00000671    r-- .const
   00005040    00005040    00000098   00000098    r-- .cinit
-20000000    20000000    00000ed0   00000000    rw-
-  20000000    20000000    00000904   00000000    rw- .data
-  20000908    20000908    00000400   00000000    rw- .sysmem
-  20000d08    20000d08    000001c8   00000000    rw- .bss
+20000000    20000000    000047c8   00000000    rw-
+  20000000    20000000    000041fc   00000000    rw- .data
+  20004200    20004200    00000400   00000000    rw- .sysmem
+  20004600    20004600    000001c8   00000000    rw- .bss
 2000fe00    2000fe00    00000200   00000000    rw-
   2000fe00    2000fe00    00000200   00000000    rw- .stack
 
@@ -147,8 +147,8 @@ section   page    origin      length       input sections
                   00004f38    00000101                                   : ctype.c.obj (.const:.string:_ctypes_)
 
 .cinit     0    00005040    00000098     
-                  00005040    0000006e     (.cinit..data.load) [load image, compression = lzss]
-                  000050ae    00000002     --HOLE-- [fill = 0]
+                  00005040    0000006d     (.cinit..data.load) [load image, compression = lzss]
+                  000050ad    00000003     --HOLE-- [fill = 0]
                   000050b0    0000000c     (__TI_handler_table)
                   000050bc    00000004     --HOLE-- [fill = 0]
                   000050c0    00000008     (.cinit..bss.load) [load image, compression = zero_init]
@@ -159,27 +159,27 @@ section   page    origin      length       input sections
 
 .binit     0    00000000    00000000     
 
-.data      0    20000000    00000904     UNINITIALIZED
-                  20000000    00000708     main.obj (.data:testArray)
-                  20000708    000000f0     rtsv7M4_T_le_v4SPD16_eabi.lib : defs.c.obj (.data:_ftable)
-                  200007f8    00000078                                   : host_device.c.obj (.data:_device)
-                  20000870    00000050                                   : host_device.c.obj (.data:_stream)
-                  200008c0    00000010     lcd_touch_driver.obj (.data)
-                  200008d0    00000010     rtsv7M4_T_le_v4SPD16_eabi.lib : defs.c.obj (.data)
-                  200008e0    0000000c                                   : exit.c.obj (.data:$O1$$)
-                  200008ec    00000008                                   : _lock.c.obj (.data:$O1$$)
-                  200008f4    00000008                                   : memory.c.obj (.data:$O1$$)
-                  200008fc    00000004                                   : errno.c.obj (.data)
-                  20000900    00000004     system_msp432p401r.obj (.data)
+.data      0    20000000    000041fc     UNINITIALIZED
+                  20000000    00004000     main.obj (.data:testArray)
+                  20004000    000000f0     rtsv7M4_T_le_v4SPD16_eabi.lib : defs.c.obj (.data:_ftable)
+                  200040f0    00000078                                   : host_device.c.obj (.data:_device)
+                  20004168    00000050                                   : host_device.c.obj (.data:_stream)
+                  200041b8    00000010     lcd_touch_driver.obj (.data)
+                  200041c8    00000010     rtsv7M4_T_le_v4SPD16_eabi.lib : defs.c.obj (.data)
+                  200041d8    0000000c                                   : exit.c.obj (.data:$O1$$)
+                  200041e4    00000008                                   : _lock.c.obj (.data:$O1$$)
+                  200041ec    00000008                                   : memory.c.obj (.data:$O1$$)
+                  200041f4    00000004                                   : errno.c.obj (.data)
+                  200041f8    00000004     system_msp432p401r.obj (.data)
 
-.sysmem    0    20000908    00000400     UNINITIALIZED
-                  20000908    00000010     rtsv7M4_T_le_v4SPD16_eabi.lib : memory.c.obj (.sysmem)
-                  20000918    000003f0     --HOLE--
+.sysmem    0    20004200    00000400     UNINITIALIZED
+                  20004200    00000010     rtsv7M4_T_le_v4SPD16_eabi.lib : memory.c.obj (.sysmem)
+                  20004210    000003f0     --HOLE--
 
-.bss       0    20000d08    000001c8     UNINITIALIZED
-                  20000d08    00000120     rtsv7M4_T_le_v4SPD16_eabi.lib : trgmsg.c.obj (.bss:_CIOBUF_)
-                  20000e28    000000a0     (.common:__TI_tmpnams)
-                  20000ec8    00000008     (.common:parmbuf)
+.bss       0    20004600    000001c8     UNINITIALIZED
+                  20004600    00000120     rtsv7M4_T_le_v4SPD16_eabi.lib : trgmsg.c.obj (.bss:_CIOBUF_)
+                  20004720    000000a0     (.common:__TI_tmpnams)
+                  200047c0    00000008     (.common:parmbuf)
 
 .stack     0    2000fe00    00000200     UNINITIALIZED
                   2000fe00    00000004     rtsv7M4_T_le_v4SPD16_eabi.lib : boot_cortex_m.c.obj (.stack)
@@ -190,14 +190,14 @@ MODULE SUMMARY
        Module                           code    ro data   rw data
        ------                           ----    -------   -------
     ./
-       main.obj                         708     0         3600   
+       main.obj                         708     0         32768  
        lcd_driver.obj                   1436    0         0      
        Lucida_Console_8pts_narrow.obj   0       1045      0      
        system_msp432p401r.obj           820     0         8      
        lcd_touch_driver.obj             580     0         32     
        startup_msp432p401r_ccs.obj      14      228       0      
     +--+--------------------------------+-------+---------+---------+
-       Total:                           3558    1273      3640   
+       Total:                           3558    1273      32808  
                                                                  
     /Applications/ti/ccs910/ccs/tools/compiler/ti-cgt-arm_18.12.4.LTS/lib/rtsv7M4_T_le_v4SPD16_eabi.lib
        _printfi.c.obj                   4851    0         0      
@@ -270,16 +270,16 @@ MODULE SUMMARY
                                                                  
        Heap:                            0       0         2048   
        Stack:                           0       0         1024   
-       Linker Generated:                0       146       0      
+       Linker Generated:                0       145       0      
     +--+--------------------------------+-------+---------+---------+
-       Grand Total:                     18643   2020      8600   
+       Grand Total:                     18643   2019      37768  
 
 
 LINKER GENERATED COPY TABLES
 
 __TI_cinit_table @ 000050c8 records: 2, size/record: 8, table size: 16
-	.data: load addr=00005040, load size=0000006e bytes, run addr=20000000, run size=00000904 bytes, compression=lzss
-	.bss: load addr=000050c0, load size=00000008 bytes, run addr=20000d08, run size=000001c8 bytes, compression=zero_init
+	.data: load addr=00005040, load size=0000006d bytes, run addr=20000000, run size=000041fc bytes, compression=lzss
+	.bss: load addr=000050c0, load size=00000008 bytes, run addr=20004600, run size=000001c8 bytes, compression=zero_init
 
 
 LINKER GENERATED HANDLER TABLE
@@ -344,7 +344,7 @@ address   name
 00004999  Reset_Handler                  
 000049a5  SVC_Handler                    
 000049a5  SysTick_Handler                
-20000900  SystemCoreClock                
+200041f8  SystemCoreClock                
 00001dcd  SystemCoreClockUpdate          
 00002045  SystemInit                     
 000049a5  T32_INT1_IRQHandler            
@@ -361,7 +361,7 @@ address   name
 000049a5  UsageFault_Handler             
 4000480c  WDTCTL_SYM                     
 000049a5  WDT_A_IRQHandler               
-20000d08  __CIOBUF_                      
+20004600  __CIOBUF_                      
 20010000  __STACK_END                    
 00000200  __STACK_SIZE                   
 00000400  __SYSMEM_SIZE                  
@@ -371,21 +371,21 @@ address   name
 000050bc  __TI_Handler_Table_Limit       
 0000459d  __TI_auto_init_nobinit_nopinit 
 000046d5  __TI_cleanup                   
-200008e0  __TI_cleanup_ptr               
+200041d8  __TI_cleanup_ptr               
 00003d61  __TI_closefile                 
 00003f89  __TI_decompress_lzss           
 0000498b  __TI_decompress_none           
 000043ed  __TI_doflush                   
-200008e4  __TI_dtors_ptr                 
-200008e8  __TI_enable_exit_profile_output
-200008d0  __TI_ft_end                    
+200041dc  __TI_dtors_ptr                 
+200041e0  __TI_enable_exit_profile_output
+200041c8  __TI_ft_end                    
 ffffffff  __TI_pprof_out_hndl            
 000000e5  __TI_printfi                   
 ffffffff  __TI_prof_data_size            
 ffffffff  __TI_prof_data_start           
 00004709  __TI_readmsg                   
 00000000  __TI_static_base__             
-20000e28  __TI_tmpnams                   
+20004720  __TI_tmpnams                   
 00004665  __TI_writemsg                  
 00004121  __TI_wrt_ok                    
 000048b5  __TI_zero_init_nomemset        
@@ -410,9 +410,9 @@ ffffffff  __TI_prof_data_start
 00003ce7  __aeabi_memset                 
 00003ce7  __aeabi_memset4                
 00003ce7  __aeabi_memset8                
-200008dc  __aeabi_stderr                 
-200008d4  __aeabi_stdin                  
-200008d8  __aeabi_stdout                 
+200041d4  __aeabi_stderr                 
+200041cc  __aeabi_stdin                  
+200041d0  __aeabi_stdout                 
 00004895  __aeabi_ui2d                   
 00003ab7  __aeabi_uldivmod               
 ffffffff  __binit__                      
@@ -424,15 +424,15 @@ UNDEFED   __mpu_init
 2000fe00  __stack                        
 0000473d  _c_int00_noargs                
 00004f38  _ctypes_                       
-200007f8  _device                        
-20000708  _ftable                        
-200008ec  _lock                          
+200040f0  _device                        
+20004000  _ftable                        
+200041e4  _lock                          
 00000b33  _nop                           
-20000870  _stream                        
-20000908  _sys_memory                    
+20004168  _stream                        
+20004200  _sys_memory                    
 UNDEFED   _system_post_cinit             
 000049c1  _system_pre_init               
-200008f0  _unlock                        
+200041e8  _unlock                        
 000049c5  abort                          
 00003279  aligned_alloc                  
 00004439  atoi                           
@@ -444,7 +444,7 @@ ffffffff  binit
 000019c3  drawLineX                      
 00001a35  drawLineY                      
 0000198d  drawPixelXY                    
-200008fc  errno                          
+200041f4  errno                          
 00004485  exit                           
 00004771  finddevice                     
 000036b1  floor                          
@@ -458,7 +458,7 @@ ffffffff  binit
 00002635  getTouchX                      
 0000274b  getTouchY                      
 000045e1  getdevice                      
-200008cc  i                              
+200041c4  i                              
 00000000  interruptVectors               
 00001c01  lcdInit                        
 000018b1  lcdSendCommand                 
@@ -475,7 +475,7 @@ ffffffff  binit
 00004875  memchr                         
 00003a1b  memcpy                         
 00003ced  memset                         
-20000ec8  parmbuf                        
+200047c0  parmbuf                        
 00003ff1  printf                         
 00003b4d  putc                           
 000047d1  remove                         
@@ -496,15 +496,15 @@ ffffffff  binit
 00004965  strlen                         
 0000469d  strncpy                        
 20000000  testArray                      
-200008c0  touchX                         
-200008c4  touchY                         
+200041b8  touchX                         
+200041bc  touchY                         
 000047d1  unlink                         
 00004979  wcslen                         
 0000484d  write                          
 00001af1  writeLetter                    
 00001aa7  writeString                    
-200008c8  xready                         
-200008c9  yready                         
+200041c0  xready                         
+200041c1  yready                         
 
 
 GLOBAL SYMBOLS: SORTED BY Symbol Address 
@@ -688,29 +688,29 @@ address   name
 000050c8  __TI_CINIT_Base                
 000050d8  __TI_CINIT_Limit               
 20000000  testArray                      
-20000708  _ftable                        
-200007f8  _device                        
-20000870  _stream                        
-200008c0  touchX                         
-200008c4  touchY                         
-200008c8  xready                         
-200008c9  yready                         
-200008cc  i                              
-200008d0  __TI_ft_end                    
-200008d4  __aeabi_stdin                  
-200008d8  __aeabi_stdout                 
-200008dc  __aeabi_stderr                 
-200008e0  __TI_cleanup_ptr               
-200008e4  __TI_dtors_ptr                 
-200008e8  __TI_enable_exit_profile_output
-200008ec  _lock                          
-200008f0  _unlock                        
-200008fc  errno                          
-20000900  SystemCoreClock                
-20000908  _sys_memory                    
-20000d08  __CIOBUF_                      
-20000e28  __TI_tmpnams                   
-20000ec8  parmbuf                        
+20004000  _ftable                        
+200040f0  _device                        
+20004168  _stream                        
+200041b8  touchX                         
+200041bc  touchY                         
+200041c0  xready                         
+200041c1  yready                         
+200041c4  i                              
+200041c8  __TI_ft_end                    
+200041cc  __aeabi_stdin                  
+200041d0  __aeabi_stdout                 
+200041d4  __aeabi_stderr                 
+200041d8  __TI_cleanup_ptr               
+200041dc  __TI_dtors_ptr                 
+200041e0  __TI_enable_exit_profile_output
+200041e4  _lock                          
+200041e8  _unlock                        
+200041f4  errno                          
+200041f8  SystemCoreClock                
+20004200  _sys_memory                    
+20004600  __CIOBUF_                      
+20004720  __TI_tmpnams                   
+200047c0  parmbuf                        
 2000fe00  __stack                        
 20010000  __STACK_END                    
 4000480c  WDTCTL_SYM                     
