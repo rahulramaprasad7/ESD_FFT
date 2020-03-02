@@ -1,3 +1,9 @@
+/*
+ * REFERENCE: A software called The Dot Factory
+ * was used to generate this data
+ * http://www.eran.io/the-dot-factory-an-lcd-font-and-image-generator/
+ */
+
 /**************************************************************************
  *
  * FILE NAME:			bitmapDb.h
